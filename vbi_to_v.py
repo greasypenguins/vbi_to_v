@@ -287,11 +287,11 @@ def main():
     for line in wire_lines:
         #equal = line.find('=')  #save index of first equal
         
-        for word in line:
-            word.replace('[]', '')  #get rid of [] from registers
-        
+        for i, word in enumerate(line):
+            line[i] = word.replace("[]", "")  #get rid of [] from registers
+
         for i in range(len(line) - 1):
-            if line[i] != "=" and line[i] != "|" and line[i+1] != "=" and line[i+1] != "|":
+            if line[i] not in "=|&+" and line[i+1] not in "=|&+":
                 line.insert(i+1, "&")
 
         line.insert(0, "assign")  #add assign before each wire assignment
