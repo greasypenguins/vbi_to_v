@@ -296,6 +296,10 @@ def main():
 
         line.insert(0, "assign")  #add assign before each wire assignment
 
+    print("  Fix reg line syntax")
+    for line in reg_lines:
+        line.insert(0,"always @(posedge RegClk)\n    ")
+
     # Save as Verilog file
     if args.output:
         print("Final Verilog code:")
