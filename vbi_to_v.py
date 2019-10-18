@@ -229,6 +229,21 @@ def main():
             line.append(new_word)
 
     # TODO: Implement more conversion operations
+    # Wire line conversion
+    print("  Fix wire line syntax")
+    for line in wire_lines:
+        #equal = line.find('=')  #save index of first equal
+        
+        if "[]" not in line:    #if [] present, probably an increment to a register and not an OR operator
+            line.replace('+', '|')   #replace OR operators
+        line.replace('[]', '')   #get rid of [] from registers
+        
+        word_list = line.split()   #turn line so far into list of words
+        for i in range(len(line) - 1):
+            if line[i] != "=" and line[i] != "|" and line[i+1] != "=" and line[i+1] != "|":
+                line.insert(i+1, "&")
+
+        line.insert(0, "assign")  #add assign before each wire assignment
 
     # Save as Verilog file
     if args.output:
