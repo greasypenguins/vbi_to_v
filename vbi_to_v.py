@@ -28,6 +28,10 @@ class RegWire(object):
         else:
             return self.name
 
+    def __lt__(self, other):
+        # Used to sort lists of RegWires by length
+        return len(self) < len(other)
+
 def main():
     print("Convert Visiboole to Verilog")
     print("Author: Weston Harder")
@@ -181,52 +185,98 @@ def main():
 
                 regwire.start_bit = int(word.split("[")[1].split(":")[0])
                 regwire.end_bit = int(word.split("[")[1].split(":")[1].split("]")[0])
-                
+            
+            else:
+                name = word.strip(";")
+                if name not in regwires:
+                    regwire = RegWire()
+                    regwire.name = name
+                    regwires[name] = regwire
+    
+    regs_string = ""
     for regwire in regwires.values():
         if regwire.is_reg:
-            print("    Found reg {}".format(regwire.name))
+            regs_string = regs_string + "\n      {}".format(regwire.name)
+    if len(regs_string) > 0:
+        print("    Found registers:{}".format(regs_string))
+
+    wires_string = ""
     for regwire in regwires.values():
         if not regwire.is_reg:
-            print("    Found wire {}".format(regwire.name))
+            wires_string = wires_string + "\n      {}".format(regwire.name)
+    if len(wires_string) > 0:
+        print("    Found wires:{}".format(wires_string))
 
-    print("  Fix declaration syntax")
-    # WMH: This part sucks, fix it
+    print("  Fix declarations")
 
     for line in dec_lines:
-        regs = []
-        wires = []
+        declared_regwires = []
         for word in line:
-            if "[" in word:
-                try:
-                    reg_stuff = word.strip("];").split("[")
-                    assert(len(reg_stuff) == 2)
-                    reg_name = reg_stuff[0]
-                    sizes = reg_stuff[1].split(":")
-                    assert(len(sizes) == 2)
-                    reg = [reg_name, sizes[0], sizes[1]]
-                except AssertionError:
-                    print(word)
-                    raise
-
-                regs.append(reg)
-            else:
-                wires.append(word.strip(";"))
+            if "%" in word:
+                continue
+            name = word.strip(";").split("[")[0]
+            regwire = regwires[name]
+            declared_regwires.append(regwires[name])
+        
+        declared_regwires = sorted(declared_regwires)
         
         new_line = []
-        for reg in regs:
-            new_line.append("reg [{}:{}] {};\n".format(reg[1], reg[2], reg[0]))
-
-        if len(wires) > 0:
-            dec_wires = "wire"
-            for wire in wires:
-                dec_wires = dec_wires + " " + wire
-            dec_wires = dec_wires + ";"
-            new_line.append(dec_wires)
-
-        line[:] = []
         
-        for new_word in new_line:
-            line.append(new_word)
+        start_bit = None
+        end_bit = None
+
+        for regwire in declared_regwires:
+            if  (regwire.start_bit == start_bit) \
+            and (regwire.end_bit   == end_bit  ) \
+            and (len(new_line) > 0             ):
+                new_line[-1] = new_line[-1] + ","
+                new_line.append(regwire.name)
+                
+            else:
+                if len(new_line) > 0:
+                    new_line[-1] = new_line[-1] + ";\n"
+
+                if regwire.is_reg:
+                    new_line.append("reg")
+                else:
+                    new_line.append("wire")
+
+                if len(regwire) > 1:
+                    new_line.append("[{}:{}]".format(regwire.start_bit, regwire.end_bit))
+                
+                new_line.append(regwire.name)
+
+            start_bit = regwire.start_bit
+            end_bit = regwire.end_bit
+
+            regwire.declared = True
+        
+        new_line[-1] = new_line[-1] + ";"
+
+        line[:] = new_line[:]
+
+    more_dec_lines = []
+
+    for regwire in regwires.values():
+        if not regwire.declared:
+            line = []
+
+            if regwire.is_reg:
+                line.append("reg")
+            else:
+                line.append("wire")
+
+            if len(regwire) > 1:
+                line.append("[{}:{}]".format(regwire.start_bit, regwire.end_bit))
+            
+            line.append("{};".format(regwire.name))
+
+            more_dec_lines.append(line)
+
+    for line in more_dec_lines:
+        lines.insert(0, line)
+
+    # WMH: This part sucks, fix it
 
     # TODO: Implement more conversion operations
     # Wire line conversion
@@ -247,13 +297,15 @@ def main():
 
     # Save as Verilog file
     if args.output:
+        print("Final Verilog code:")
         for line in lines:
             print(" ".join(line).replace("\n ", "\n"))
     else:
+        print("Saving final Verilog code")
         try:
             with open(v_file_path, "x") as v_file:
                 for line in lines:
-                    str_line = " ".join(line).replace("\n ", "\n")
+                    str_line = " ".join(line).replace("\n ", "\n").replace("\n\n", "\n")
                     v_file.write("{}\n".format(str_line))
 
         except FileExistsError:
