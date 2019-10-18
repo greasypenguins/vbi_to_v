@@ -286,7 +286,6 @@ def main():
         for word in line:
             word.replace('[]', '')  #get rid of [] from registers
         
-        word_list = line.split()   #turn line so far into list of words
         for i in range(len(line) - 1):
             if line[i] != "=" and line[i] != "|" and line[i+1] != "=" and line[i+1] != "|":
                 line.insert(i+1, "&")
