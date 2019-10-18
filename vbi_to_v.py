@@ -218,9 +218,13 @@ def main():
             regwire = regwires[name]
             declared_regwires.append(regwires[name])
         
-        declared_regwires = sorted(declared_regwires)
-        
         new_line = []
+
+        if len(declared_regwires) == 0:
+            line[:] = new_line[:]
+            continue
+
+        declared_regwires = sorted(declared_regwires)
         
         start_bit = None
         end_bit = None
