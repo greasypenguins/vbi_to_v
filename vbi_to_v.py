@@ -182,10 +182,10 @@ def main():
                 regwire.start_bit = int(word.split("[")[1].split(":")[0])
                 regwire.end_bit = int(word.split("[")[1].split(":")[1].split("]")[0])
                 
-    for regwire in regwires:
+    for regwire in regwires.values():
         if regwire.is_reg:
             print("    Found reg {}".format(regwire.name))
-    for regwire in regwires:
+    for regwire in regwires.values():
         if not regwire.is_reg:
             print("    Found wire {}".format(regwire.name))
 
