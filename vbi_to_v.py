@@ -167,9 +167,18 @@ def main():
 
     for line in dec_lines:
         for word in line:
+            if "%" in word:
+                continue
+
             if ":" in word:
                 name = word.split("[")[0]
-                regwire = regwires[name]
+                try:
+                    regwire = regwires[name]
+                except KeyError:
+                    regwire = RegWire()
+                    regwire.name = name
+                    regwires[name] = regwire
+
                 regwire.start_bit = int(word.split("[")[1].split(":")[0])
                 regwire.end_bit = int(word.split("[")[1].split(":")[1].split("]")[0])
                 
@@ -180,9 +189,8 @@ def main():
         if not regwire.is_reg:
             print("    Found wire {}".format(regwire.name))
 
+    print("  Fix declaration syntax")
     # WMH: This part sucks, fix it
-    all_regs = []
-    all_wires = []
 
     for line in dec_lines:
         regs = []
@@ -201,10 +209,8 @@ def main():
                     raise
 
                 regs.append(reg)
-                all_regs.append(reg)
             else:
                 wires.append(word.strip(";"))
-                all_wires.append(word.strip(";"))
         
         new_line = []
         for reg in regs:
@@ -221,8 +227,6 @@ def main():
         
         for new_word in new_line:
             line.append(new_word)
-
-    print("  Fix declaration syntax")
 
     # TODO: Implement more conversion operations
 
