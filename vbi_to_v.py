@@ -305,7 +305,7 @@ def main():
         while changed:
             changed = False
             for i in range(len(line) - 1):
-                if line[i] not in ["=", "<=", "|", "&", "+", "-"] and line[i+1] not in ["=", "<=", "|", "&", "+", "-"]:
+                if line[i] not in ["=", "<=", "|", "&", "^", "+", "-"] and line[i+1] not in ["=", "<=", "|", "&", "^", "+", "-"]:
                     line.insert(i+1, "&")
                     changed = True
 
@@ -321,7 +321,7 @@ def main():
         while changed:
             changed = False
             for i in range(len(line) - 1):
-                if line[i] not in ["=", "<=", "|", "&", "+", "-"] and line[i+1] not in ["=", "<=", "|", "&", "+", "-"]:
+                if line[i] not in ["=", "<=", "|", "&", "^", "+", "-"] and line[i+1] not in ["=", "<=", "|", "&", "^", "+", "-"]:
                     line.insert(i+1, "&")
                     changed = True
 
