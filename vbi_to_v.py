@@ -62,6 +62,12 @@ def main():
         help="Print output Verilog code to console instead of saving to .v file.",
         action="store_true"
         )
+    parser.add_argument(
+        "-f",
+        "--force",
+        help="Write the .v file even if it already exists (overwriting the old one).",
+        action="store_true"
+        )
     args = parser.parse_args()
 
     vbi_file_path = args.vbi_file
@@ -80,18 +86,19 @@ def main():
 
     # Preprocess Visiboole
     print("Preprocessing Visiboole")
-    # TODO: Fix spaces with regex
+
     # Split into words
     lines = []
     for raw_line in raw_lines:
         # Fix concatenations
-        old = raw_line.copy()
-        new = ""
-
+        old = raw_line
+        new = None
         while new != old:
-            new = old.sub()
+            if new is not None:
+                old = new
+            new = re.sub(r"(\{[^\}]+)(\s)([^\{]+\})", r"\g<1>,\g<3>", old)
 
-        lines.append(raw_line.split())
+        lines.append(new.split())
 
     # Categorize lines
     print("Categorizing lines")
@@ -326,7 +333,12 @@ def main():
     else:
         print("Saving final Verilog code")
         try:
-            with open(v_file_path, "x") as v_file:
+            if args.force:
+                open_mode = "w"
+            else:
+                open_mode = "x"
+
+            with open(v_file_path, open_mode) as v_file:
                 for line in lines:
                     str_line = " ".join(line).replace("\n ", "\n").replace("\n\n", "\n")
                     v_file.write("{}\n".format(str_line))
