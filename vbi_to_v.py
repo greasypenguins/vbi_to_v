@@ -308,7 +308,7 @@ def main():
 
         line.insert(0, "assign")  #add assign before each wire assignment
 
-    print("  Fix wire line syntax")
+    print("  Fix register line syntax")
     for line in reg_lines:
         #equal = line.find('=')  #save index of first equal
         
@@ -318,8 +318,6 @@ def main():
         for i in range(len(line) - 1):
             if line[i] not in "=|&+" and line[i+1] not in "=|&+":
                 line.insert(i+1, "&")
-
-        line.insert(0, "assign")  #add assign before each wire assignment
 
     print("  Fix reg line syntax")
     for line in reg_lines:
