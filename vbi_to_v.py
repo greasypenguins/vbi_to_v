@@ -327,7 +327,7 @@ def main():
 
     print("  Fix reg line syntax")
     for line in reg_lines:
-        line.insert(0,"always @(posedge RegClk)\n    ")
+        line.insert(0,"always @(posedge S08clk)\n    ")
 
     # Save as Verilog file
     if args.output:
