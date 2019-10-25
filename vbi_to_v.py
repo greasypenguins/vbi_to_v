@@ -3,7 +3,7 @@
 
 from argparse import ArgumentParser
 import os.path
-#import re
+import re
 
 class RegWire(object):
     is_reg = False
@@ -84,6 +84,13 @@ def main():
     # Split into words
     lines = []
     for raw_line in raw_lines:
+        # Fix concatenations
+        old = raw_line.copy()
+        new = ""
+
+        while new != old:
+            new = old.sub()
+
         lines.append(raw_line.split())
 
     # Categorize lines
@@ -280,11 +287,22 @@ def main():
     for line in more_dec_lines:
         lines.insert(0, line)
 
-
-    # TODO: Implement more conversion operations
     # Wire line conversion
     print("  Fix wire line syntax")
     for line in wire_lines:
+        #equal = line.find('=')  #save index of first equal
+        
+        for i, word in enumerate(line):
+            line[i] = word.replace("[]", "")  #get rid of [] from registers
+
+        for i in range(len(line) - 1):
+            if line[i] not in "=|&+" and line[i+1] not in "=|&+":
+                line.insert(i+1, "&")
+
+        line.insert(0, "assign")  #add assign before each wire assignment
+
+    print("  Fix wire line syntax")
+    for line in reg_lines:
         #equal = line.find('=')  #save index of first equal
         
         for i, word in enumerate(line):
